@@ -11,3 +11,5 @@
 ./test
 
 *.csv
+
+main.py
