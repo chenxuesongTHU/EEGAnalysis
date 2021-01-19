@@ -1,0 +1,13 @@
+./**/results
+./**/result
+./**/*.zip
+./**/*.csv
+
+./data
+./dataset
+
+./ziyi
+
+./test
+
+*.csv
