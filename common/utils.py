@@ -8,6 +8,10 @@
 @Description :   
 """
 import os
+from datetime import datetime
+from numpy import long
+import time
+# from constants import *
 
 def mkdir(path):
     folder = os.path.exists(path)
@@ -17,3 +21,20 @@ def mkdir(path):
 
     else:
         pass
+
+def date2timestamp(date):
+    if len(date) != 26:
+        datetime_obj = datetime.strptime(date, "%Y-%m-%d %H:%M:%S.%f")
+    else:
+        datetime_obj = datetime.strptime(date, "%Y-%m-%d %H-%M-%S.%f")
+    local_timestamp = long(time.mktime(datetime_obj.timetuple()) * 1000.0 + datetime_obj.microsecond / 1000.0)
+
+    # obj_stamp = int(time.mktime(datetime_obj.timetuple()) * 1000.0 + datetime_obj.microsecond / 1000.0)
+    return local_timestamp
+
+
+# def loop_template():
+#     for username in user_name_list:
+#         for task_id in FORMAL_TASK_ID_LIST:
+#             for page_id in range(1, 7):
+#                 page_uid = f'{task_id}_{page_id}'

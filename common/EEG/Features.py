@@ -264,21 +264,24 @@ def test_features():
     feats = Features(page_eeg_raw)
     psd_feats = feats.get_psd_de()
 
-if __name__ == '__main__':
 
-    draw_whole_sat_and_unsat(14)
-    # test_features()
-
+def output_users_EEG_feats():
+    '''
+    该函数用来导出所有用户浏览landing page时的EEG特征
+    :return:
+    '''
     # todo: username, username_list, models_type
-    model_type_idx = 2
+    # model_type_idx = 2
     user_idx = 5
+    phrase = 'whole'
+    # phrase = 'start5s'
 
-    for user_idx in range(14, 17):
+    for user_idx in range(2, 17):
 
         username = user_name_list[user_idx]
         sat_raw = None
         unstat_raw = None
-        for model_type_idx in range(3):
+        for model_type_idx in range(8, 9):
             file_name = models_type[model_type_idx]
             path = f'{prj_path}/dataset/{username}'
             mkdir(path)
@@ -288,8 +291,11 @@ if __name__ == '__main__':
             for task_id in FORMAL_TASK_ID_LIST:
                 for page_id in range(1, 7):
                     page_eeg = PageEEG(username, task_id, page_id)
+                    if phrase == 'start5s':
+                        page_eeg_raw = page_eeg.get_start_reading_EEG()
+                    if phrase == 'whole':
+                        page_eeg_raw = page_eeg.get_reading_EEG()
 
-                    page_eeg_raw = page_eeg.get_start_reading_EEG()
                     if page_eeg_raw == 'NoRecord':
                         continue
                     sat_level = page_eeg.get_satisfaction()
@@ -303,15 +309,79 @@ if __name__ == '__main__':
                         psd_feats = feats.get_psd()
                     elif model_type_idx == 1:
                         psd_feats = feats.get_de()
-                    elif model_type_idx == 2:
+                    elif model_type_idx in [2, 4, 8]:
                         psd_feats = feats.get_psd_de()
                     else:
                         pass
                     # psd_feats = feats.get_de()
                     # psd_feats = feats.get_STFT_psd()
-
+                    page_uid = f'{task_id}_{page_id}'
                     output_feats = list(np.squeeze(psd_feats.reshape(1, -1)))
                     output_feats = [str(i) for i in output_feats]
-                    output_file.write(str(sat_level) + ',' + ','.join(output_feats) + '\n')
+                    output_file.write(page_uid + ',' + str(sat_level) + ',' + ','.join(output_feats) + '\n')
 
             output_file.close()
+
+
+def output_EEG_feats_of_min_max_area():
+    '''
+    导出用户的AOI面积最大最小时段内的EEG特征
+    :return:
+    '''
+    for user_idx in range(0, 17):
+
+        username = user_name_list[user_idx]
+        path = f'{prj_path}/dataset/{username}'
+        time_span_src_file = pd.read_csv(f'{path}/{feature_type[0]}.csv', index_col=0)
+
+        for model_type_idx in range(6, 8):
+            file_name = models_type[model_type_idx]
+            mkdir(path)
+            output_file = open(f'{path}/{file_name}.csv', 'w')
+            # channel 1的波段alpha, beta ...  channel 2的波段alpha, beta ...
+            # for username in user_name_list[1:2]:
+            for task_id in FORMAL_TASK_ID_LIST:
+                for page_id in range(1, 7):
+                    # 获取开始时间
+                    page_uid = f'{task_id}_{page_id}'
+                    col_name = file_name[:3]
+                    time_span = time_span_src_file.at[page_uid, col_name]
+                    start_time = int(time_span[0]) * 1000
+                    duration = 2000
+                    page_eeg = PageEEG(username, task_id, page_id, time_bias=start_time)
+                    page_eeg_raw = page_eeg.get_start_reading_EEG(duration)
+
+                    if page_eeg_raw == 'NoRecord':
+                        continue
+                    sat_level = page_eeg.get_satisfaction()
+                    feats = Features(page_eeg_raw)
+
+                    # feats.filter(['Savitzky-Golay'])
+                    # feats.filter(['fir'])
+                    # feats.filter(['Savitzky-Golay', 'fir'])
+
+                    if model_type_idx == 0:
+                        psd_feats = feats.get_psd()
+                    elif model_type_idx == 1:
+                        psd_feats = feats.get_de()
+                    elif model_type_idx in [2, 4, 6, 7]:
+                        psd_feats = feats.get_psd_de()
+                    else:
+                        pass
+                    # psd_feats = feats.get_de()
+                    # psd_feats = feats.get_STFT_psd()
+                    page_uid = f'{task_id}_{page_id}'
+                    output_feats = list(np.squeeze(psd_feats.reshape(1, -1)))
+                    output_feats = [str(i) for i in output_feats]
+                    output_file.write(page_uid + ',' + str(sat_level) + ',' + ','.join(output_feats) + '\n')
+
+            output_file.close()
+
+
+if __name__ == '__main__':
+
+    # draw_whole_sat_and_unsat(14)
+    # test_features()
+    # output_users_EEG_feats()
+    # output_EEG_feats_of_min_max_area()
+    output_users_EEG_feats()

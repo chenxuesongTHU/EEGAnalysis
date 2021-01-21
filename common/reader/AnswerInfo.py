@@ -48,6 +48,9 @@ class AnswerInfo:
     def get_reading_end_timestamp(self):
         return self.reading_end_timestamp
 
+    def get_reading_time(self):
+        return self.reading_end_timestamp - self.reading_start_timestamp
+
     def get_satisfaction(self):
         return self.satisfaction
 

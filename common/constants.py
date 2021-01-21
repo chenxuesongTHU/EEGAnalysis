@@ -5,7 +5,7 @@
 @Time        :   2020/12/30 11:57 下午
 """
 import numpy as np
-
+import pandas as pd
 users = {
     '陈海天': '2016010106',
     '吴伟浩': '2019011220_',
@@ -13,7 +13,6 @@ users = {
     '房晓宇': '2020211288',  # 80
     '王志红': '2021660037',  # 80
     '李兴航': '2020210925',
-    # '吴越飏': '2018311513',
     '徐晓萌': '2020213873',
     '陈常越': '2019011019',
     '柯丽媚': '2020312519',  # 80  此位置开始引入十字
@@ -24,6 +23,7 @@ users = {
     '李子钰': '2020311319',  # 80
     '何剑宇': '2020310361',  # 80
     '李博达': '2017310560',
+    # '吴越飏': '2018311513',
 }
 
 
@@ -60,14 +60,27 @@ prj_path = '/Users/cxs/IR/EEG/EEGAnalysis'
 
 FORMAL_TASK_ID_LIST = [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24]
 
+predictor_list =[
+    'LR', 'SVM', 'KNN', 'RF', 'GBDT'
+]
+
+
+
 models_type = [
     'org_psd_features',
     'org_de_features',
     'org_psd_de_features',
+    'eye_movement_AOI_area_gap=1s_duration=2s',  # e.g. 1-3s, 2-4s, ...
+    'org_psd_de_features_with_uid',
+    'psd_de_AOI_features',
+    'max_AOI_psd_de_features',
+    'min_AOI_psd_de_features',
+    'whole_reading_time_psd_de_feature',
+    'dwell_time',
 ]
 
-predictor_list =[
-    'LR', 'SVM', 'KNN', 'RF', 'GBDT'
+feature_type = [
+    'eye_movement_AOI_area_gap=1s_duration=2s_min_max_area_time_span',
 ]
 
 FREQ_BANDS = {
@@ -80,3 +93,4 @@ FREQ_BANDS = {
 
 # for username, user_stuId in users.items():
 #     print(user_stuId, username, sep=',')
+columns = ['0-2', '1-3', '2-4', '3-5']

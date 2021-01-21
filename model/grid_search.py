@@ -28,9 +28,10 @@ from time import time
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import tree
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn import preprocessing
 
 from common.constants import *
-from common.utils import *
+from common.utils import mkdir
 import random
 from sklearn.utils import shuffle
 
@@ -45,6 +46,12 @@ def map_sat(x):
 # file_name = models_type[feature_type_idx]
 
 def getData(user_idx, feature_type_idx):
+    if feature_type_idx in [3]:
+        return get_eye_movement_data(user_idx, feature_type_idx)
+    if feature_type_idx == 5:
+        return get_psd_de_eye_movement_area_data(user_idx, feature_type_idx)
+    if feature_type_idx in [6, 7, 8]:
+        return getData_with_blog_uid(user_idx, feature_type_idx)
     file_name = models_type[feature_type_idx]
     # df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[idx]}_psd_in_diff_bands_stft_n_windows=3_step=1.csv', header=None)
     df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', header=None)
@@ -60,6 +67,69 @@ def getData(user_idx, feature_type_idx):
     # print(aa, bb)
     return X, y
 
+
+def getData_with_blog_uid(user_idx, feature_type_idx):
+    file_name = models_type[feature_type_idx]
+    df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', index_col=0, header=None)
+    df = df[df[1] != 2]
+    y = df[1].apply(lambda x: map_sat(x))
+    X = df.drop(1, axis=1, inplace=False)
+    # X = preprocessing.normalize(X, axis=1)
+    random.seed(2021)
+    X = X.values.tolist()
+    y = list(y)
+    cc = list(zip(X, y))
+    random.shuffle(cc)
+    X[:], y[:] = zip(*cc)
+    # print(aa, bb)
+    return X, y
+
+def get_eye_movement_data(user_idx, feature_type_idx):
+    file_name = models_type[feature_type_idx]
+    df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', index_col=0)
+    df = df[df['satisfaction'] != 2]
+    y = df['satisfaction'].apply(lambda x: map_sat(x))
+    X = df.drop(['satisfaction'], axis=1)
+    X = preprocessing.normalize(X, axis=1)
+    random.seed(2021)
+    X = list(X)
+    y = list(y)
+    cc = list(zip(X, y))
+    random.shuffle(cc)
+    X[:], y[:] = zip(*cc)
+    # print(aa, bb)
+    return X, y
+
+
+def get_psd_de_eye_movement_area_data(user_idx, feature_type_idx):
+
+    eeg_file_name = models_type[4]
+    eye_movement_file_name = models_type[3]
+
+    eeg_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{eeg_file_name}.csv', index_col=0, header=None
+    )
+    eye_movement_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{eye_movement_file_name}.csv', index_col=0
+    )
+    df = pd.concat([eeg_df, eye_movement_df], axis=1)
+    df.dropna(axis=0, how='any', inplace=True)
+    df = df[df['satisfaction'] != 2]
+    y = df['satisfaction'].apply(lambda x: map_sat(x))
+    X = df.drop([1, 'satisfaction'], axis=1)
+    norm_eye_movement_X = preprocessing.normalize(X[columns], axis=1)
+    norm_eeg_X = X.iloc[:, 0:-4].values
+    X = np.concatenate([norm_eeg_X, norm_eye_movement_X], axis=1)
+    random.seed(2021)
+    X = list(X)
+    y = list(y)
+    cc = list(zip(X, y))
+    random.shuffle(cc)
+    X[:], y[:] = zip(*cc)
+    # print(aa, bb)
+    return X, y
+
+# get_psd_de_eye_movement_area_data(0, 5)
 
 #K近邻（K Nearest Neighbor）
 def KNN():
@@ -248,8 +318,9 @@ if __name__ == '__main__':
     # for user_idx in range(2, 6):
     #     for feature_type_idx in range(1, 3):
     # selectRFParam(user_idx, feature_type_idx)
-    for user_idx in range(14, 17):
-        for feature_type_idx in range(0, 3):
+    for user_idx in range(2, 16):
+        for feature_type_idx in range(8, 9):
+            print(models_type[feature_type_idx])
             file_name = models_type[feature_type_idx]
             selectRFParam(user_idx, feature_type_idx, file_name)
     print('随机森林参数调优完成！')

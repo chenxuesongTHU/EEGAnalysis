@@ -88,6 +88,14 @@ class PageEEG:
 
         return raw_eeg_file
 
+    def get_reading_EEG(self):
+        df = self.df[(self.start_time <= self.df['time']) & (self.df['time'] <= self.end_time)]
+        if len(df) == 0:
+            return 'NoRecord'
+        raw_eeg_file = RawArray(df.T, self.info)
+        return raw_eeg_file
+
+
 
 if __name__ == '__main__':
     page_eeg = PageEEG('2019270058', 1, 6)
