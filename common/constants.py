@@ -77,6 +77,12 @@ models_type = [
     'min_AOI_psd_de_features',
     'whole_reading_time_psd_de_feature',
     'dwell_time',
+    'eeg_dwell_time',
+    'eye_movement_distance',
+    'eye_movement_dwell_time', # distance
+    'eeg_eye_movement_dwell_time',
+    'AOI_dwell_time',
+    'eeg_AOI_dwell_time',
 ]
 
 feature_type = [

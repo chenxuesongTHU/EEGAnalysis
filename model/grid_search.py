@@ -46,12 +46,16 @@ def map_sat(x):
 # file_name = models_type[feature_type_idx]
 
 def getData(user_idx, feature_type_idx):
-    if feature_type_idx in [3]:
+    if feature_type_idx in [3, 11]:
         return get_eye_movement_data(user_idx, feature_type_idx)
     if feature_type_idx == 5:
         return get_psd_de_eye_movement_area_data(user_idx, feature_type_idx)
     if feature_type_idx in [6, 7, 8]:
         return getData_with_blog_uid(user_idx, feature_type_idx)
+    if feature_type_idx in [9]:
+        return getData_with_blog_uid_header(user_idx, feature_type_idx)
+    if feature_type_idx == 10:
+        return get_two_type_features_data(user_idx, feat_type_1=8, feat_type_2=9)
     file_name = models_type[feature_type_idx]
     # df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[idx]}_psd_in_diff_bands_stft_n_windows=3_step=1.csv', header=None)
     df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', header=None)
@@ -84,6 +88,24 @@ def getData_with_blog_uid(user_idx, feature_type_idx):
     # print(aa, bb)
     return X, y
 
+
+def getData_with_blog_uid_header(user_idx, feature_type_idx):
+    file_name = models_type[feature_type_idx]
+    df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', index_col=0)
+    df = df[df['satisfaction'] != 2]
+    y = df['satisfaction'].apply(lambda x: map_sat(x))
+    X = df.drop(['satisfaction'], axis=1)
+    X = preprocessing.normalize(X, axis=0)
+    random.seed(2021)
+    X = list(X)
+    y = list(y)
+    cc = list(zip(X, y))
+    random.shuffle(cc)
+    X[:], y[:] = zip(*cc)
+    # print(aa, bb)
+    return X, y
+
+
 def get_eye_movement_data(user_idx, feature_type_idx):
     file_name = models_type[feature_type_idx]
     df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', index_col=0)
@@ -100,6 +122,35 @@ def get_eye_movement_data(user_idx, feature_type_idx):
     # print(aa, bb)
     return X, y
 
+
+def get_two_type_features_data(user_idx, feat_type_1, feat_type_2):
+
+    eeg_file_name = models_type[feat_type_1]
+    dwell_time_file_name = models_type[feat_type_2]
+
+    eeg_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{eeg_file_name}.csv', index_col=0, header=None
+    )
+    dwell_time_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{dwell_time_file_name}.csv', index_col=0
+    )
+
+    df = pd.concat([eeg_df, dwell_time_df], axis=1)
+    df.dropna(axis=0, how='any', inplace=True)
+    df = df[df['satisfaction'] != 2]
+    y = df['satisfaction'].apply(lambda x: map_sat(x))
+    X = df.drop([1, 'satisfaction'], axis=1)
+    norm_dwell_time = preprocessing.normalize(X['dwellTime'].to_frame(), axis=0)
+    norm_eeg_X = X.iloc[:, 0:-1].values
+    X = np.concatenate([norm_eeg_X, norm_dwell_time], axis=1)
+    random.seed(2021)
+    X = list(X)
+    y = list(y)
+    cc = list(zip(X, y))
+    random.shuffle(cc)
+    X[:], y[:] = zip(*cc)
+    # print(aa, bb)
+    return X, y
 
 def get_psd_de_eye_movement_area_data(user_idx, feature_type_idx):
 
@@ -318,8 +369,8 @@ if __name__ == '__main__':
     # for user_idx in range(2, 6):
     #     for feature_type_idx in range(1, 3):
     # selectRFParam(user_idx, feature_type_idx)
-    for user_idx in range(2, 16):
-        for feature_type_idx in range(8, 9):
+    for user_idx in range(0, 16):
+        for feature_type_idx in range(11, 12):
             print(models_type[feature_type_idx])
             file_name = models_type[feature_type_idx]
             selectRFParam(user_idx, feature_type_idx, file_name)

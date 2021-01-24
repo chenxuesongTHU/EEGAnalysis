@@ -7,6 +7,7 @@
 @Author      :   Xuesong Chen
 @Description :   
 """
+import math
 
 from common.constants import *
 from common.reader.AnswerInfo import AnswerInfo
@@ -70,8 +71,31 @@ class EyeMovement:
 
         return area
 
+    def get_distance(self, task_id, page_id, start_time_bias=0, duration=5000):
 
-if __name__ == '__main__':
+        page_eye_movement_df = self.get_eye_movement(task_id, page_id, start_time_bias, duration)
+        x_sum = 0
+        y_sum = 0
+        pre_x = None
+        pre_y = None
+        for row in page_eye_movement_df.iterrows():
+            row = row[1]
+            x, y, gaze_duration = row['FixationPointX'], row['FixationPointY'], row['GazeEventDuration']
+            if pre_x == None:
+                pre_x = x
+                pre_y = y
+            else:
+                x_sum += abs(x-pre_x)
+                y_sum += abs(y-pre_y)
+                pre_x = x
+                pre_y = y
+        distance = math.sqrt(pow(x_sum, 2) + pow(y_sum, 2))
+
+        return distance
+
+
+def output_distance():
+
     duration = 2
     start_time_gap = 1
     feature_name = models_type[3]
@@ -91,6 +115,34 @@ if __name__ == '__main__':
                 for start_time in range(0, 4):
                     time_span = f'{start_time}-{start_time + duration}'
                     area = eye_movement.get_area(
+                        task_id, page_id, start_time_bias=start_time, duration=duration
+                    )
+                    eye_movement_feats_df.at[page_uid, time_span] = area
+
+        feat_path = f'{prj_path}/dataset/{username}/'
+        eye_movement_feats_df.to_csv(f'{feat_path}/{feature_name}.csv')
+
+
+if __name__ == '__main__':
+    duration = 2
+    start_time_gap = 1
+    feature_name = models_type[11]
+    time_span_list = [f'{start_idx}-{start_idx + duration}' for start_idx in range(0, 4)]
+    index_list = [f'{task_id}_{page_id}' for task_id in FORMAL_TASK_ID_LIST for page_id in range(1, 7)]
+    for username in user_name_list:
+        eye_movement_feats_df = pd.DataFrame(
+            columns=['satisfaction'] + time_span_list,
+            index=index_list,
+        )
+        eye_movement = EyeMovement(username)
+        for task_id in FORMAL_TASK_ID_LIST:
+            for page_id in range(1, 7):
+                answer_info = AnswerInfo(username, task_id, page_id)
+                page_uid = f'{task_id}_{page_id}'
+                eye_movement_feats_df.at[page_uid, 'satisfaction'] = answer_info.satisfaction
+                for start_time in range(0, 4):
+                    time_span = f'{start_time}-{start_time + duration}'
+                    area = eye_movement.get_distance(
                         task_id, page_id, start_time_bias=start_time, duration=duration
                     )
                     eye_movement_feats_df.at[page_uid, time_span] = area
