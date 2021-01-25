@@ -4,8 +4,6 @@
 @File        :   constants  
 @Time        :   2020/12/30 11:57 下午
 """
-import numpy as np
-import pandas as pd
 users = {
     '陈海天': '2016010106',
     '吴伟浩': '2019011220_',
@@ -25,7 +23,6 @@ users = {
     '李博达': '2017310560',
     # '吴越飏': '2018311513',
 }
-
 
 mobile_data_users = [
     '2016010106',
@@ -60,11 +57,9 @@ prj_path = '/Users/cxs/IR/EEG/EEGAnalysis'
 
 FORMAL_TASK_ID_LIST = [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24]
 
-predictor_list =[
+predictor_list = [
     'LR', 'SVM', 'KNN', 'RF', 'GBDT'
 ]
-
-
 
 models_type = [
     'org_psd_features',
@@ -79,10 +74,11 @@ models_type = [
     'dwell_time',
     'eeg_dwell_time',
     'eye_movement_distance',
-    'eye_movement_dwell_time', # distance
-    'eeg_eye_movement_dwell_time',
+    'eye_movement_dwell_time',  # distance
+    'eeg_eye_movement_dwell_time',  # distance
     'AOI_dwell_time',
     'eeg_AOI_dwell_time',
+    'whole_reading_time_psd_feature',
 ]
 
 feature_type = [
@@ -100,3 +96,7 @@ FREQ_BANDS = {
 # for username, user_stuId in users.items():
 #     print(user_stuId, username, sep=',')
 columns = ['0-2', '1-3', '2-4', '3-5']
+
+channel_name_list = [
+    'Af8-O2', 'Fp2-O2', 'Fp1-O2', 'Af7-O2', 'O1-O2',
+]

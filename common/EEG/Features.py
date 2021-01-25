@@ -276,12 +276,12 @@ def output_users_EEG_feats():
     phrase = 'whole'
     # phrase = 'start5s'
 
-    for user_idx in range(2, 17):
+    for user_idx in range(0, 16):
 
         username = user_name_list[user_idx]
         sat_raw = None
         unstat_raw = None
-        for model_type_idx in range(8, 9):
+        for model_type_idx in range(16, 17):
             file_name = models_type[model_type_idx]
             path = f'{prj_path}/dataset/{username}'
             mkdir(path)
@@ -305,7 +305,7 @@ def output_users_EEG_feats():
                     # feats.filter(['fir'])
                     # feats.filter(['Savitzky-Golay', 'fir'])
 
-                    if model_type_idx == 0:
+                    if model_type_idx in [0, 16]:
                         psd_feats = feats.get_psd()
                     elif model_type_idx == 1:
                         psd_feats = feats.get_de()

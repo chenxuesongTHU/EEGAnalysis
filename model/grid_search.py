@@ -50,12 +50,20 @@ def getData(user_idx, feature_type_idx):
         return get_eye_movement_data(user_idx, feature_type_idx)
     if feature_type_idx == 5:
         return get_psd_de_eye_movement_area_data(user_idx, feature_type_idx)
-    if feature_type_idx in [6, 7, 8]:
+    if feature_type_idx in [6, 7, 8, 16]:
         return getData_with_blog_uid(user_idx, feature_type_idx)
     if feature_type_idx in [9]:
         return getData_with_blog_uid_header(user_idx, feature_type_idx)
     if feature_type_idx == 10:
         return get_two_type_features_data(user_idx, feat_type_1=8, feat_type_2=9)
+    if feature_type_idx == 12:
+        return get_two_type_features_data(user_idx, feat_type_1=11, feat_type_2=9)
+    if feature_type_idx == 13:
+        return get_three_type_features_data(user_idx, feat_type_1=8, feat_type_2=11, feat_type_3=9)
+    if feature_type_idx == 14:
+        return get_two_type_features_data(user_idx, feat_type_1=3, feat_type_2=9)
+    if feature_type_idx == 15:
+        return get_three_type_features_data(user_idx, feat_type_1=8, feat_type_2=3, feat_type_3=9)
     file_name = models_type[feature_type_idx]
     # df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[idx]}_psd_in_diff_bands_stft_n_windows=3_step=1.csv', header=None)
     df = pd.read_csv(f'{prj_path}/dataset/{user_name_list[user_idx]}/{file_name}.csv', header=None)
@@ -127,10 +135,15 @@ def get_two_type_features_data(user_idx, feat_type_1, feat_type_2):
 
     eeg_file_name = models_type[feat_type_1]
     dwell_time_file_name = models_type[feat_type_2]
-
-    eeg_df = pd.read_csv(
-        f'{prj_path}/dataset/{user_name_list[user_idx]}/{eeg_file_name}.csv', index_col=0, header=None
-    )
+    if feat_type_1 in [3, 11]:
+        eeg_df = pd.read_csv(
+            f'{prj_path}/dataset/{user_name_list[user_idx]}/{eeg_file_name}.csv', index_col=0
+        )
+        eeg_df.drop(['satisfaction'], axis=1, inplace=True)
+    else:
+        eeg_df = pd.read_csv(
+            f'{prj_path}/dataset/{user_name_list[user_idx]}/{eeg_file_name}.csv', index_col=0, header=None
+        )
     dwell_time_df = pd.read_csv(
         f'{prj_path}/dataset/{user_name_list[user_idx]}/{dwell_time_file_name}.csv', index_col=0
     )
@@ -139,10 +152,53 @@ def get_two_type_features_data(user_idx, feat_type_1, feat_type_2):
     df.dropna(axis=0, how='any', inplace=True)
     df = df[df['satisfaction'] != 2]
     y = df['satisfaction'].apply(lambda x: map_sat(x))
+    if feat_type_1 in [3, 11]:
+        X = df.drop(['satisfaction'], axis=1)
+    else:
+        X = df.drop([1, 'satisfaction'], axis=1)
+    norm_dwell_time = preprocessing.normalize(X['dwellTime'].to_frame(), axis=0)
+    if feat_type_1 in [3, 11]:
+        norm_eeg_X = preprocessing.normalize(X[columns], axis=1)
+    else:
+        norm_eeg_X = X.iloc[:, 0:-1].values
+    X = np.concatenate([norm_eeg_X, norm_dwell_time], axis=1)
+    random.seed(2021)
+    X = list(X)
+    y = list(y)
+    cc = list(zip(X, y))
+    random.shuffle(cc)
+    X[:], y[:] = zip(*cc)
+    # print(aa, bb)
+    return X, y
+
+def get_three_type_features_data(user_idx, feat_type_1, feat_type_2, feat_type_3):
+
+    eeg_file_name = models_type[feat_type_1]
+    eye_movement_file_name = models_type[feat_type_2]
+    dwell_time_file_name = models_type[feat_type_3]
+
+    eeg_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{eeg_file_name}.csv', index_col=0, header=None
+    )
+
+    eye_movement_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{eye_movement_file_name}.csv', index_col=0,
+    )
+    eye_movement_df.drop(['satisfaction'], axis=1, inplace=True)
+
+    dwell_time_df = pd.read_csv(
+        f'{prj_path}/dataset/{user_name_list[user_idx]}/{dwell_time_file_name}.csv', index_col=0
+    )
+
+    df = pd.concat([eeg_df, eye_movement_df, dwell_time_df], axis=1)
+    df.dropna(axis=0, how='any', inplace=True)
+    df = df[df['satisfaction'] != 2]
+    y = df['satisfaction'].apply(lambda x: map_sat(x))
     X = df.drop([1, 'satisfaction'], axis=1)
     norm_dwell_time = preprocessing.normalize(X['dwellTime'].to_frame(), axis=0)
-    norm_eeg_X = X.iloc[:, 0:-1].values
-    X = np.concatenate([norm_eeg_X, norm_dwell_time], axis=1)
+    norm_eeg_X = X.iloc[:, 0:50].values
+    norm_eye_movement_X = preprocessing.normalize(X[columns], axis=1)
+    X = np.concatenate([norm_eeg_X, norm_eye_movement_X, norm_dwell_time], axis=1)
     random.seed(2021)
     X = list(X)
     y = list(y)
@@ -348,20 +404,28 @@ def print_importance_RF():
                   "n_estimators": 300,
                  }
 
-    best_param_of_RF = {
-                  "max_depth": 3,
-                  "min_samples_split": 20,
-                  "min_samples_leaf": 10,
-                  "max_features": 'log2',
-                  "bootstrap": True,
-                  # "criterion": ["gini", "entropy"],
-                  "n_estimators": 200,
-                 }
-
-    clf_RF = RandomForestClassifier(**best_param_of_RF)
-    T = getData()
-    clf_RF.fit(T[0], np.ravel(T[1]))
-    print(clf_RF.feature_importances_)
+    # best_param_of_RF = {
+    #               "max_depth": 3,
+    #               "min_samples_split": 20,
+    #               "min_samples_leaf": 10,
+    #               "max_features": 'log2',
+    #               "bootstrap": True,
+    #               # "criterion": ["gini", "entropy"],
+    #               "n_estimators": 200,
+    #              }
+    feature_importances_file = open('feat_importances.csv', 'w')
+    columns_name =['username'] + [f'{channel_name}_{freq_band}' for channel_name in channel_name_list for freq_band in FREQ_BANDS.keys()]
+    feature_importances_file.write(','.join(columns_name)+'\n')
+    for user_idx in range(0, 16):
+        feature_type_idx = 16
+        print(models_type[feature_type_idx])
+        file_name = models_type[feature_type_idx]
+        clf_RF = RandomForestClassifier(**best_param_of_RF)
+        T = getData(user_idx, feature_type_idx)
+        clf_RF.fit(T[0], np.ravel(T[1]))
+        feature_importances_ = [str(importance) for importance in clf_RF.feature_importances_]
+        feature_importances_file.write(user_name_list[user_idx] + ',' + ','.join(feature_importances_) + '\n')
+    feature_importances_file.close()
 
 
 if __name__ == '__main__':
@@ -369,12 +433,22 @@ if __name__ == '__main__':
     # for user_idx in range(2, 6):
     #     for feature_type_idx in range(1, 3):
     # selectRFParam(user_idx, feature_type_idx)
-    for user_idx in range(0, 16):
-        for feature_type_idx in range(11, 12):
-            print(models_type[feature_type_idx])
-            file_name = models_type[feature_type_idx]
-            selectRFParam(user_idx, feature_type_idx, file_name)
-    print('随机森林参数调优完成！')
+    print_importance_RF()
+
+    '''
+        main function
+        start
+    '''
+    # for user_idx in range(0, 16):
+    #     for feature_type_idx in [12, 14, 15]:
+    #         print(models_type[feature_type_idx])
+    #         file_name = models_type[feature_type_idx]
+    #         selectRFParam(user_idx, feature_type_idx, file_name)
+    # print('随机森林参数调优完成！')
+    '''
+        end
+    '''
+
 
     # 输出不同特征的importance
     # print_importance_RF()
