@@ -56,11 +56,6 @@ user_name_list = list(users.values())
 prj_path = '/Users/cxs/IR/EEG/EEGAnalysis'
 
 FORMAL_TASK_ID_LIST = [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24]
-
-predictor_list = [
-    'LR', 'SVM', 'KNN', 'RF', 'GBDT'
-]
-
 models_type = [
     'org_psd_features',
     'org_de_features',
@@ -79,9 +74,14 @@ models_type = [
     'AOI_dwell_time',
     'eeg_AOI_dwell_time',
     'whole_reading_time_psd_feature',
+    'end_reading_time_psd_de_features',
 ]
 
-feature_type = [
+predictor_list = [
+    'LR', 'SVM', 'KNN', 'RF', 'GBDT'
+]
+
+feature_type_list = [
     'eye_movement_AOI_area_gap=1s_duration=2s_min_max_area_time_span',
 ]
 
@@ -100,3 +100,6 @@ columns = ['0-2', '1-3', '2-4', '3-5']
 channel_name_list = [
     'Af8-O2', 'Fp2-O2', 'Fp1-O2', 'Af7-O2', 'O1-O2',
 ]
+
+import pandas as pd
+import numpy as np

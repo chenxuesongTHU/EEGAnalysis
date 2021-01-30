@@ -83,6 +83,8 @@ class PageEEG:
     def get_end_reading_EEG(self, duration=5000):
         n_samples = int(duration / 1000 * 250)
         df = self.df[(self.df['time'] <= self.end_time)][-n_samples:]
+        if len(df) == 0:
+            return 'NoRecord'
         raw_eeg_file = RawArray(df.T, self.info)
         # raw_eeg_file.info['meas_date'] = datetime.fromtimestamp(df['time'].iloc[0] / 1000)
 
@@ -94,6 +96,10 @@ class PageEEG:
             return 'NoRecord'
         raw_eeg_file = RawArray(df.T, self.info)
         return raw_eeg_file
+
+    def get_fixation_EEG(self):
+        
+        pass
 
 
 

@@ -50,7 +50,7 @@ def getData(user_idx, feature_type_idx):
         return get_eye_movement_data(user_idx, feature_type_idx)
     if feature_type_idx == 5:
         return get_psd_de_eye_movement_area_data(user_idx, feature_type_idx)
-    if feature_type_idx in [6, 7, 8, 16]:
+    if feature_type_idx in [6, 7, 8, 16, 17]:
         return getData_with_blog_uid(user_idx, feature_type_idx)
     if feature_type_idx in [9]:
         return getData_with_blog_uid_header(user_idx, feature_type_idx)
@@ -433,18 +433,18 @@ if __name__ == '__main__':
     # for user_idx in range(2, 6):
     #     for feature_type_idx in range(1, 3):
     # selectRFParam(user_idx, feature_type_idx)
-    print_importance_RF()
+    # print_importance_RF()
 
     '''
         main function
         start
     '''
-    # for user_idx in range(0, 16):
-    #     for feature_type_idx in [12, 14, 15]:
-    #         print(models_type[feature_type_idx])
-    #         file_name = models_type[feature_type_idx]
-    #         selectRFParam(user_idx, feature_type_idx, file_name)
-    # print('随机森林参数调优完成！')
+    for user_idx in range(0, 16):
+        for feature_type_idx in [17]:
+            print(models_type[feature_type_idx])
+            file_name = models_type[feature_type_idx]
+            selectRFParam(user_idx, feature_type_idx, file_name)
+    print('随机森林参数调优完成！')
     '''
         end
     '''

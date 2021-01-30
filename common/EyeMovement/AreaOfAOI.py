@@ -21,7 +21,7 @@ def compare_area_of_AOI():
     # all_users_unsat_df = pd.DataFrame(
     #     columns=['0-2', '1-3', '2-4', '3-5']
     # )
-    file_name = models_type[3]
+    file_name = models_type[3]  # 3, 11
     for username in user_name_list:
         df = pd.read_csv(f'{prj_path}/dataset/{username}/{file_name}.csv', index_col=0)
         sat_df = df.loc[(df['satisfaction'] == 4) | (df['satisfaction'] == 3)]
@@ -48,17 +48,17 @@ def compare_area_of_AOI():
 
 
 def get_max_min_area_time_span():
-    file_name = models_type[3]
+    file_name = models_type[3]  # 3, 11
     for username in user_name_list:
         df = pd.read_csv(f'{prj_path}/dataset/{username}/{file_name}.csv', index_col=0)
         df.drop(['satisfaction'], axis=1, inplace=True)
         max_area_span_df = df.idxmax(axis=1).to_frame('max')
         min_area_span_df = df.idxmin(axis=1).to_frame('min')
         result_df = pd.concat([max_area_span_df, min_area_span_df], axis=1)
-        result_df.to_csv(f'{prj_path}/dataset/{username}/{file_name}_min_max_area_time_span.csv')
+        result_df.to_csv(f'{prj_path}/dataset/{username}/{file_name}_min_max_distance_time_span.csv')
         # print()
 
 
 if __name__ == '__main__':
-    # compare_area_of_AOI()
-    get_max_min_area_time_span()
+    compare_area_of_AOI()
+    # get_max_min_area_time_span()

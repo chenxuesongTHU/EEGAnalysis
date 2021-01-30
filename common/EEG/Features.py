@@ -13,6 +13,7 @@ import math
 import matplotlib.pyplot as plt
 import mne
 import numpy as np
+import pandas as pd
 from mne.io import RawArray
 from mne.preprocessing import ICA
 from mne.time_frequency import psd_welch
@@ -273,7 +274,8 @@ def output_users_EEG_feats():
     # todo: username, username_list, models_type
     # model_type_idx = 2
     user_idx = 5
-    phrase = 'whole'
+    # phrase = 'whole'
+    phrase = 'end5s'
     # phrase = 'start5s'
 
     for user_idx in range(0, 16):
@@ -281,7 +283,7 @@ def output_users_EEG_feats():
         username = user_name_list[user_idx]
         sat_raw = None
         unstat_raw = None
-        for model_type_idx in range(16, 17):
+        for model_type_idx in range(17, 18):
             file_name = models_type[model_type_idx]
             path = f'{prj_path}/dataset/{username}'
             mkdir(path)
@@ -295,6 +297,8 @@ def output_users_EEG_feats():
                         page_eeg_raw = page_eeg.get_start_reading_EEG()
                     if phrase == 'whole':
                         page_eeg_raw = page_eeg.get_reading_EEG()
+                    if phrase == 'end5s':
+                        page_eeg_raw = page_eeg.get_end_reading_EEG()
 
                     if page_eeg_raw == 'NoRecord':
                         continue
@@ -309,7 +313,7 @@ def output_users_EEG_feats():
                         psd_feats = feats.get_psd()
                     elif model_type_idx == 1:
                         psd_feats = feats.get_de()
-                    elif model_type_idx in [2, 4, 8]:
+                    elif model_type_idx in [2, 4, 8, 17]:
                         psd_feats = feats.get_psd_de()
                     else:
                         pass
@@ -332,7 +336,7 @@ def output_EEG_feats_of_min_max_area():
 
         username = user_name_list[user_idx]
         path = f'{prj_path}/dataset/{username}'
-        time_span_src_file = pd.read_csv(f'{path}/{feature_type[0]}.csv', index_col=0)
+        time_span_src_file = pd.read_csv(f'{path}/{feature_type_list[0]}.csv', index_col=0)
 
         for model_type_idx in range(6, 8):
             file_name = models_type[model_type_idx]

@@ -32,6 +32,13 @@ def date2timestamp(date):
     # obj_stamp = int(time.mktime(datetime_obj.timetuple()) * 1000.0 + datetime_obj.microsecond / 1000.0)
     return local_timestamp
 
+def map_sat(x):
+    if x > 2:
+        return 1
+    elif x < 2:
+        return 0
+    else:
+        return -1
 
 # def loop_template():
 #     for username in user_name_list:
