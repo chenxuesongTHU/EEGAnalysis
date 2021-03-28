@@ -7,10 +7,8 @@
 @Author      :   Xuesong Chen
 @Description :   
 """
-from datetime import datetime
 
 import mne
-import pandas as pd
 from mne.io import RawArray
 
 from common.constants import *
@@ -98,9 +96,11 @@ class PageEEG:
         return raw_eeg_file
 
     def get_fixation_EEG(self):
-        
+
         pass
 
+    def get_saccade_EEG(self):
+        pass
 
 
 if __name__ == '__main__':

@@ -34,8 +34,8 @@ class TaskInfo:
         task_id = record[3]
         self.familiarity = record[4]
         self.difficulty = record[5]
-        start_timestamp = record[6]
-        end_timestamp = record[7]
+        self.start_timestamp = record[6]
+        self.end_timestamp = record[7]
 
     def get_familiarity(self):
         return self.familiarity
